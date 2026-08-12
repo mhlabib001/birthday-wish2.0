@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "Wish": {
+      "title": "Wish",
+      "description": "Birthday wish submitted by visitors for Kusum",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "senderName": {
+          "type": "string",
+          "maxLength": 100,
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 1000,
+          "minLength": 1
+        },
+        "emoji": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "userId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "userEmail": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["senderName", "message", "userId", "createdAt"]
+    },
+    "CaptionLike": {
+      "title": "CaptionLike",
+      "description": "Like counts on birthday captions in the library",
+      "type": "object",
+      "properties": {
+        "captionId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "count": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["captionId", "count"]
+    },
+    "UserActivity": {
+      "title": "UserActivity",
+      "description": "User activity progress and milestones",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "candlesBlown": {
+          "type": "boolean"
+        },
+        "wheelSpins": {
+          "type": "number"
+        },
+        "balloonsPopped": {
+          "type": "number"
+        },
+        "letterScratched": {
+          "type": "boolean"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId"]
+    }
+  },
+  "firestore": {
+    "/wishes/{wishId}": {
+      "schema": "Wish",
+      "description": "Collection of real-time birthday wishes"
+    },
+    "/captionLikes/{captionId}": {
+      "schema": "CaptionLike",
+      "description": "Collection of caption likes"
+    },
+    "/userActivities/{userId}": {
+      "schema": "UserActivity",
+      "description": "Collection of user activity state"
+    }
+  }
+}

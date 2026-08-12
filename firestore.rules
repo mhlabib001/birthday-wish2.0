@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Test connection document for app boot validation
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Validation for Wish
+    function isValidWish(data) {
+      return data.keys().hasAll(['senderName', 'message', 'userId', 'createdAt']) &&
+             data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 100 &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 1000 &&
+             data.userId is string && data.userId.size() <= 128 && data.userId == request.auth.uid &&
+             (!('emoji' in data) || (data.emoji is string && data.emoji.size() <= 20)) &&
+             (!('userEmail' in data) || (data.userEmail is string && data.userEmail.size() <= 256));
+    }
+
+    // Wishes Collection
+    match /wishes/{wishId} {
+      allow read: if true; // Publicly readable guestbook wall
+      allow create: if isSignedIn() && isValidId(wishId) && isValidWish(incoming());
+      allow update: if isOwner(existing().userId) && isValidWish(incoming()) && incoming().userId == existing().userId;
+      allow delete: if isOwner(existing().userId);
+    }
+
+    // Validation for CaptionLike
+    function isValidCaptionLike(data) {
+      return data.keys().hasAll(['captionId', 'count']) &&
+             data.captionId is string && data.captionId.size() <= 128 &&
+             data.count is number && data.count >= 0;
+    }
+
+    // Caption Likes Collection
+    match /captionLikes/{captionId} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && isValidId(captionId) && isValidCaptionLike(incoming());
+      allow delete: if false;
+    }
+
+    // Validation for UserActivity
+    function isValidUserActivity(data) {
+      return data.keys().hasAll(['userId']) &&
+             data.userId is string && data.userId.size() <= 128 && data.userId == request.auth.uid &&
+             (!('candlesBlown' in data) || data.candlesBlown is bool) &&
+             (!('wheelSpins' in data) || data.wheelSpins is number) &&
+             (!('balloonsPopped' in data) || data.balloonsPopped is number) &&
+             (!('letterScratched' in data) || data.letterScratched is bool);
+    }
+
+    // User Activities Collection
+    match /userActivities/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidId(userId) && isValidUserActivity(incoming());
+      allow delete: if isOwner(userId);
+    }
+  }
+}
