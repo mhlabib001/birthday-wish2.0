@@ -1,0 +1,6 @@
+{
+  "name": "Kusum's Birthday Celebration",
+  "description": "An interactive, beautiful birthday wish application for Mst. Kusum khatun created by MH Labib with candles, mini games, surprise lifelines, and best Bangla birthday captions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
